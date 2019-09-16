@@ -220,4 +220,12 @@ public class RuleDatabase {
             FileHelper.closeOrWarn(reader, TAG, "loadBlockedHosts: Error closing " + item.location);
         }
     }
+
+    public void personalUnblock(String location) {
+        blockedHosts.get().remove(location);
+    }
+
+    public void personalBlock(String location) {
+        blockedHosts.get().add(location);
+    }
 }

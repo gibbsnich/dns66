@@ -38,6 +38,8 @@ public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
                 return new WhitelistFragment();
             case 3:
                 return new DNSFragment();
+            case 4:
+                return new LogFragment();
         }
         return null;
     }
@@ -53,13 +55,15 @@ public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
                 return context.getString(R.string.whitelist_tab);
             case 3:
                 return context.getString(R.string.dns_tab);
+            case 4:
+                return context.getString(R.string.log_tab);
         }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 4;
+        return 5;
     }
 
 }

@@ -15,6 +15,7 @@ package org.jak_linux.dns66.vpn;
 import android.content.Context;
 import android.util.Log;
 
+import org.jak_linux.dns66.MainActivity;
 import org.jak_linux.dns66.db.RuleDatabase;
 import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.IpSelector;
@@ -184,6 +185,8 @@ public class DnsPacketProxy {
             return;
         }
         String dnsQueryName = dnsMsg.getQuestion().getName().toString(true);
+        //LogEntry logEntry = new LogEntry(dnsQueryName);
+        boolean wasBlocked = false;
         if (!ruleDatabase.isBlocked(dnsQueryName.toLowerCase(Locale.ENGLISH))) {
             Log.i(TAG, "handleDnsRequest: DNS Name " + dnsQueryName + " Allowed, sending to " + destAddr);
             DatagramPacket outPacket = new DatagramPacket(dnsRawData, 0, dnsRawData.length, destAddr, parsedUdp.getHeader().getDstPort().valueAsInt());
@@ -194,6 +197,13 @@ public class DnsPacketProxy {
             dnsMsg.getHeader().setRcode(Rcode.NOERROR);
             dnsMsg.addRecord(NEGATIVE_CACHE_SOA_RECORD, Section.AUTHORITY);
             handleDnsResponse(parsedPacket, dnsMsg.toWire());
+            //logEntry.setBlocked(true);
+            wasBlocked = true;
+        }
+
+        if (MainActivity.config.logs.enabled) {
+            MainActivity.config.addLogEntry(dnsQueryName, wasBlocked);
+            //LogDatabase.getInstance().addEntry(logEntry);
         }
     }
 

@@ -108,6 +108,8 @@
     <string name="notifications_paused_desc">Notifications to resume after pausing</string>
     <string name="notifications_group_service">Service control</string>
     <string name="notifications_group_updates">Updates</string>
+    <string name="log_tab">Log</string>
+    <string name="switch_onlyblocked">Show only blocked entries</string>
     <string-array name="whitelist_defaults">
         <item>No apps bypass by default</item>
         <item>All apps bypass by default</item>

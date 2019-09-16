@@ -12,9 +12,10 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.gson.Gson;
+
+import org.jak_linux.dns66.db.RuleDatabase;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -40,6 +42,7 @@ public class Configuration {
     public boolean autoStart;
     public Hosts hosts = new Hosts();
     public DnsServers dnsServers = new DnsServers();
+    public Logs logs = new Logs();
     public Whitelist whitelist = new Whitelist();
     public boolean showNotification = true;
     public boolean nightMode;
@@ -62,6 +65,15 @@ public class Configuration {
         }
         config.updateURL("http://someonewhocares.org/hosts/hosts", "https://someonewhocares.org/hosts/hosts", 0);
 
+        RuleDatabase ruleDatabase = RuleDatabase.getInstance();
+        for (Item item: config.logs.keepItems) {
+            if (item.state == 1) {
+                // was blocked
+                ruleDatabase.personalUnblock(item.location);
+            } else {
+                ruleDatabase.personalBlock(item.location);
+            }
+        }
 
         return config;
     }
@@ -101,6 +113,18 @@ public class Configuration {
                 if (newState >= 0)
                     host.state = newState;
             }
+        }
+    }
+
+    public void addLogEntry(String dnsQueryName, boolean wasBlocked) {
+        Item item = new Item();
+        item.title = dnsQueryName;
+        item.state = wasBlocked ? 1 : 0;
+        if (!logs.items.contains(item)) {
+            //while (logs.items.size() > 100) {
+            //    logs.items.remove(100);
+            //}
+            logs.items.add(item);
         }
     }
 
@@ -151,6 +175,21 @@ public class Configuration {
         public boolean isDownloadable() {
             return location.startsWith("https://") || location.startsWith("http://");
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Item item = (Item) o;
+            return state == item.state &&
+                    Objects.equals(title, item.title) &&
+                    Objects.equals(location, item.location);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(title, location, state);
+        }
     }
 
     public static class Hosts {
@@ -162,6 +201,13 @@ public class Configuration {
     public static class DnsServers {
         public boolean enabled;
         public List<Item> items = new ArrayList<>();
+    }
+
+    public static class Logs {
+        public boolean enabled;
+        public boolean showOnlyBlocked;
+        public List<Item> items = new ArrayList<>();
+        public List<Item> keepItems = new ArrayList<>(); //todo also add these to RuleDB onActivityStart
     }
 
     public static class Whitelist {

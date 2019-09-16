@@ -26,11 +26,17 @@ import java.util.List;
 public class ItemRecyclerViewAdapter extends RecyclerView.Adapter<ItemRecyclerViewAdapter.ViewHolder> {
     public final List<Configuration.Item> items;
     private final int stateChoices;
+    private StateListener stateListener;
     private Context context;
 
-    public ItemRecyclerViewAdapter(List<Configuration.Item> items, int stateChoices) {
+    public ItemRecyclerViewAdapter(List<Configuration.Item> items, int stateChoices, StateListener stateListener) {
         this.items = items;
         this.stateChoices = stateChoices;
+        this.stateListener = stateListener;
+    }
+
+    public ItemRecyclerViewAdapter(List<Configuration.Item> items, int stateChoices) {
+        this(items, stateChoices, null);
     }
 
     // Create new views (invoked by the layout manager)
@@ -54,6 +60,10 @@ public class ItemRecyclerViewAdapter extends RecyclerView.Adapter<ItemRecyclerVi
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public interface StateListener {
+        public void stateChanged(Configuration.Item item);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -112,6 +122,9 @@ public class ItemRecyclerViewAdapter extends RecyclerView.Adapter<ItemRecyclerVi
             if (v == iconView) {
                 item.state = (item.state + 1) % stateChoices;
                 updateState();
+                if (stateListener != null) {
+                    stateListener.stateChanged(item);
+                }
                 FileHelper.writeSettings(itemView.getContext(), MainActivity.config);
             } else if (v == view) {
                 // Start edit activity
